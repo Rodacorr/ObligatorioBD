@@ -15,7 +15,11 @@ public class Consultas {
 	}
 	
 	public static String BorrarFolio() {
-		return "DELETE FROM Folios WHERE codFolio = ?";
+		return "DELETE FROM Estudios.Folios WHERE codFolio = ?";
+	}
+	
+	public static String BorrarRevisiones() {
+		return "DELETE FROM Estudios.Revisiones WHERE codFolio = ?";
 	}
 	
 	public static String ListarFolios() {
@@ -23,12 +27,20 @@ public class Consultas {
 	}
 	
 	public static String ListarRevisiones() {
-		return "SELECT * FROM Estudio.Revisiones " + 
+		return "SELECT * FROM Estudios.Revisiones " + 
 				"WHERE CodFolio = ? ORDERBY numero";
 	}
 	
 	public static String FolioMasRevisado() {
 		return "SELECT codFolio, COUNT(*) as Total FROM Estudio.Revisiones " + 
 				"GROUP BY codFolio ORDER BY Total DESC LIMIT 1";
+	}
+	
+	public static String consultaFolio() {
+		return "SELECT COUNT(*) FROM Estudios.Folio WHERE Codigo = ?";
+	}
+	
+	public static String obtenerRevisiones() {
+		return "SELECT MAX(numero) FROM Revisiones WHERE codigoFolio = ?";
 	}
 }

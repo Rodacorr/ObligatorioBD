@@ -2,6 +2,10 @@ package logicaPersistencia.accesoBD;
 
 import java.sql.*;
 import java.util.*;
+
+import logicaPersistencia.valueObjects.VOFolio;
+import logicaPersistencia.valueObjects.VORevision;
+
 import java.io.*;
 
 public class accesoBD {
@@ -22,47 +26,63 @@ public class accesoBD {
 		con = DriverManager.getConnection(urlBD, usr, pwd);
 		System.out.println("Conexion exitosa...");	
 	}
-	
-	public void agregarFolio(String codigo, String caratula, int paginas) {
-		try {
-			PreparedStatement pstmt = con.prepareStatement(Consultas.AgregarFolio());
-			pstmt.setString(1, codigo);
-			pstmt.setString(2, caratula);
-			pstmt.setInt(3, paginas);
-			pstmt.executeUpdate();
-			pstmt.close();
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+	public boolean existeFolio(String codigo) throws SQLException {
+		PreparedStatement pstmt = con.prepareStatement(Consultas.consultaFolio());
+		pstmt.setString(1,codigo);
+		ResultSet rs = pstmt.executeQuery();
+		if(rs.next()) {
+			return true;
 		}
+		return false;
 	}
 	
-	public void agregarRevision(int numero, String codFolio, String descripcion) {
-		try {
-			PreparedStatement pstmt = con.prepareStatement(Consultas.AgregarRevision());
-			pstmt.setInt(1, numero);
-			pstmt.setString(2, codFolio);
-			pstmt.setString(3, descripcion);
-			pstmt.executeUpdate();
-			pstmt.close();
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void agregarFolio(VOFolio folio) throws SQLException {
+		PreparedStatement ps = con.prepareStatement(Consultas.AgregarFolio());
+        ps.setString(1, folio.getCodigo());
+        ps.setString(2, folio.getCaratula());
+        ps.setInt(3, folio.getPaginas());
+        ps.executeUpdate();
 	}
 	
-	public void borrarFolio(String codFolio) {
+	public int obtenerUltimaRevision(String codFolio) {
 		try {
-			PreparedStatement pstmt = con.prepareStatement(Consultas.BorrarFolio());
+			PreparedStatement pstmt = con.prepareStatement(Consultas.obtenerRevisiones());
 			pstmt.setString(1, codFolio);
-			pstmt.executeUpdate();
-			pstmt.close();
-			
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			ResultSet rs = pstmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		}catch(SQLException e) {
 			e.printStackTrace();
+		}
+		return 0;
+	}
+	public void agregarRevision(String codFolio, VORevision revision) throws SQLException {
+        PreparedStatement pstmt = con.prepareStatement(Consultas.AgregarRevision());
+        pstmt.setString(1, codFolio);
+        pstmt.setInt(2, revision.getNumero());
+        pstmt.setString(3, revision.getDescripcion());
+        pstmt.executeUpdate();
+    }
+	
+	public void borrarFolioRevisiones(String codFolio) throws SQLException {
+		if(existeFolio(codFolio)){
+			try {
+				PreparedStatement pstmt1 = con.prepareStatement(Consultas.BorrarRevisiones());
+				pstmt1.setString(1, codFolio);
+				pstmt1.executeUpdate();
+				pstmt1.close();
+				
+				PreparedStatement pstmt2 = con.prepareStatement(Consultas.BorrarFolio());
+				pstmt2.setString(1, codFolio);
+				pstmt2.executeUpdate();
+				pstmt2.close();
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
